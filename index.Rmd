@@ -20,3 +20,89 @@ WHERE teamID='NYA' and yearID=1927"
 sqldf(query)
 ```
 
+Suppose now you would like to see a query looking for team members of the New York Yankees that have hit up to 40 homeruns. I could write the following query:
+
+```{r}
+query<-"SELECT playerID,yearID,teamID,HR FROM Batting
+WHERE teamID='NYA' and HR<=40"
+sqldf(query)
+```
+Suppose now you want to look at players that have more than 40 homeruns and less than 60 strikeouts.
+```{r}
+query<-"SELECT playerID,yearID,teamID,HR,SO FROM Batting
+WHERE HR>40 and SO<60"
+sqldf(query)
+```
+Suppose now you want to look at Phillies players in the 1970's who had more than 30 homeruns.
+```{r}
+query<-"SELECT playerID,yearID,teamID,HR FROM Batting
+WHERE teamID='PHI' and yearID>=1970 and yearID<1980 and HR>30"
+sqldf(query)
+```
+## Order By
+
+Within SQL, you are able to arrange the rows of your output. For example, suppose you would like to see everytime a player hit more than 50 homeruns, but want to order that by the players with the most homeruns at the top. 
+```{r}
+query<-"SELECT playerID,yearID,teamID,HR FROM Batting
+WHERE HR>50
+ORDER BY HR DESC"
+sqldf(query)
+```
+In the next query, you can look at players that have struck out less than 10 times and had at least 400 at-bats. And you would like to order the list with the least strikeouts at the top. 
+```{r}
+query<-"SELECT playerID,yearID,teamID,SO,AB FROM Batting
+WHERE SO<10 and AB>=400
+ORDER BY SO"
+sqldf(query)
+```
+
+## Aggregation 
+
+When working with SQL, you will occasionally need to condense your results to the minimum output. You will see how to do this with the examples of sum(HR) and avg(HR).
+```{r}
+query<-"SELECT playerID,sum(HR) FROM Batting
+GROUP BY playerID
+HAVING sum(HR)>=600
+ORDER BY sum(HR) DESC"
+sqldf(query)
+```
+
+```{r}
+query<-"SELECT playerID,avg(HR) FROM Batting
+GROUP BY playerID
+HAVING avg(HR)>30
+ORDER BY avg(HR) DESC"
+sqldf(query)
+```
+In the first example we ordered the players from greatest to least looking at at least 600 homeruns. In the next example, we looked at players who have averaged more than 30 homeruns in the order from greatest to least.
+
+## Joins
+
+In some cases, you will sometimes have to join multiple tables together into one output. In this example we are looking for seasons when Babe Ruth played baseball, and we are joing Master and Batting.
+```{r}
+query<-"SELECT nameFirst,nameLast,teamID,yearID,HR
+FROM Batting INNER JOIN Master
+ON Batting.playerID=Master.playerID
+WHERE Batting.playerID='ruthba01'"
+
+sqldf(query)
+```
+Now we have linked together the Master and Batting tables again to see when players have hit more than 50 homeruns and include their first and last name, team, year, and homerun totals.
+```{r}
+query<-"SELECT nameFIRST,nameLAST,teamID,yearID,HR
+FROM Batting INNER JOIN Master
+ON Batting.playerID=Master.playerID
+WHERE HR>50
+ORDER BY HR DESC"
+sqldf(query)
+```
+Now we looked for results of Babe Ruth, his team, year, year played, and homerun totals.
+```{r}
+query<-"SELECT playerID,name,Batting.yearID,Batting.HR
+FROM Batting INNER JOIN Teams
+ON Batting.teamID=Teams.teamID and Batting.yearID=Teams.yearID
+WHERE playerID='ruthba01'"
+
+sqldf(query)
+```
+
